@@ -10,6 +10,7 @@ import mark from 'markdown-it-mark'
 import toc from 'markdown-it-toc-and-anchor'
 import katex from 'markdown-it-katex'
 import tasklists from 'markdown-it-task-lists'
+import anchor from 'markdown-it-anchor'
 
 export default {
   md: new markdownIt(),
@@ -121,6 +122,22 @@ export default {
       type: Object,
       default: () => ({})
     },
+    anchor: {
+      type: Boolean,
+      default: false,
+    },
+    anchorOpts: {
+      type: Object,
+      default: () => ({
+        level: 1,
+        // slugify: string => string,
+        permalink: false,
+        // renderPermalink: (slug, opts, state, permalink) => {},
+        permalinkClass: 'header-anchor',
+        permalinkSymbol: '¶',
+        permalinkBefore: false
+      })
+    },
     prerender: {
       type: Function,
       default: (sourceData) => { return sourceData }
@@ -200,6 +217,10 @@ export default {
           }
         },
       })
+    }
+
+    if (this.anchor) {
+      this.md.use(anchor, this.anchorOpts);
     }
 
     let outHtml = this.show ?
