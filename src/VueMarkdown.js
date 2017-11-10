@@ -207,6 +207,10 @@ export default {
       return defaultLinkRenderer(tokens, idx, options, env, self)
     }
 
+    if (this.anchor) {
+      this.md.use(anchor, this.anchorOpts);
+    }
+
     if (this.toc) {
       this.md.use(toc, {
         tocClassName: this.tocClass,
@@ -220,17 +224,13 @@ export default {
         tocCallback: (tocMarkdown, tocArray, tocHtml) => {
           if (tocHtml) {
             if (this.tocId && document.getElementById(this.tocId)) {
-              document.getElementById(this.tocId).innerHTML = tocHtml
+              document.getElementById(this.tocId).innerHTML = tocHtml;
             }
 
-            this.$emit('toc-rendered', tocHtml)
+            this.$emit('toc-rendered', tocHtml);
           }
         },
       })
-    }
-
-    if (this.anchor) {
-      this.md.use(anchor, this.anchorOpts);
     }
 
     let outHtml = this.show ?

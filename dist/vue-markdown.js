@@ -349,6 +349,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	      return defaultLinkRenderer(tokens, idx, options, env, self);
 	    };
 
+	    if (this.anchor) {
+	      this.md.use(_markdownItAnchor2.default, this.anchorOpts);
+	    }
+
 	    if (this.toc) {
 	      this.md.use(_markdownItTocAndAnchor2.default, {
 	        tocClassName: this.tocClass,
@@ -369,10 +373,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	          }
 	        }
 	      });
-	    }
-
-	    if (this.anchor) {
-	      this.md.use(_markdownItAnchor2.default, this.anchorOpts);
 	    }
 
 	    var outHtml = this.show ? this.md.render(this.prerender(this.sourceData)) : '';
