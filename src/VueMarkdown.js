@@ -12,6 +12,8 @@ import katex from 'markdown-it-katex'
 import tasklists from 'markdown-it-task-lists'
 import anchor from 'markdown-it-anchor'
 
+const string = require('string');
+
 export default {
   md: new markdownIt(),
 
@@ -130,9 +132,10 @@ export default {
       type: Object,
       default: () => ({
         level: 1,
-        // slugify: string => string,
+        slugify: this.slugify,
         permalink: false,
         // renderPermalink: (slug, opts, state, permalink) => {},
+        anchorCustomIDPattern: /\{#(.*?)\}/,
         permalinkClass: 'header-anchor',
         permalinkSymbol: '¶',
         permalinkBefore: false
@@ -151,6 +154,17 @@ export default {
   computed: {
     tocLastLevelComputed() {
       return this.tocLastLevel > this.tocFirstLevel ? this.tocLastLevel : this.tocFirstLevel + 1
+    }
+  },
+
+  methods: {
+    slugify(value) {
+      let matches = value.match(this.anchorOpts.anchorCustomIDPattern);
+      if (matches) {
+        return matches[1];
+      } else {
+        return string(value).slugify().toString();
+      }
     }
   },
 
