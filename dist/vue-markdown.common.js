@@ -254,7 +254,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	      default: function _default() {
 	        return {
 	          level: 1,
-	          slugify: undefined.slugify,
+	          slugify: function slugify(value) {
+	            var matches = value.match(/\{#(.*?)\}/);
+	            if (matches) {
+	              return matches[1];
+	            } else {
+	              return string(value).slugify().toString();
+	            }
+	          },
 	          permalink: false,
 	          // renderPermalink: (slug, opts, state, permalink) => {},
 	          anchorCustomIDPattern: /\{#(.*?)\}/,
@@ -281,17 +288,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	  computed: {
 	    tocLastLevelComputed: function tocLastLevelComputed() {
 	      return this.tocLastLevel > this.tocFirstLevel ? this.tocLastLevel : this.tocFirstLevel + 1;
-	    }
-	  },
-
-	  methods: {
-	    slugify: function slugify(value) {
-	      var matches = value.match(this.anchorOpts.anchorCustomIDPattern);
-	      if (matches) {
-	        return matches[1];
-	      } else {
-	        return string(value).slugify().toString();
-	      }
 	    }
 	  },
 

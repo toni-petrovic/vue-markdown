@@ -132,7 +132,14 @@ export default {
       type: Object,
       default: () => ({
         level: 1,
-        slugify: this.slugify,
+        slugify: (value) => {
+          let matches = value.match(/\{#(.*?)\}/);
+          if (matches) {
+            return matches[1];
+          } else {
+            return string(value).slugify().toString();
+          }
+        },
         permalink: false,
         // renderPermalink: (slug, opts, state, permalink) => {},
         anchorCustomIDPattern: /\{#(.*?)\}/,
@@ -154,17 +161,6 @@ export default {
   computed: {
     tocLastLevelComputed() {
       return this.tocLastLevel > this.tocFirstLevel ? this.tocLastLevel : this.tocFirstLevel + 1
-    }
-  },
-
-  methods: {
-    slugify(value) {
-      let matches = value.match(this.anchorOpts.anchorCustomIDPattern);
-      if (matches) {
-        return matches[1];
-      } else {
-        return string(value).slugify().toString();
-      }
     }
   },
 
