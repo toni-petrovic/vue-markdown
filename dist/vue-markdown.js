@@ -149,6 +149,8 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
+	var string = __webpack_require__(179);
+
 	exports.default = {
 	  md: new _markdownIt2.default(),
 
@@ -273,9 +275,17 @@ return /******/ (function(modules) { // webpackBootstrap
 	      default: function _default() {
 	        return {
 	          level: 1,
-	          // slugify: string => string,
+	          slugify: function slugify(value) {
+	            var matches = value.match(/\{#(.*?)\}/);
+	            if (matches) {
+	              return matches[1];
+	            } else {
+	              return string(value).slugify().toString();
+	            }
+	          },
 	          permalink: false,
 	          // renderPermalink: (slug, opts, state, permalink) => {},
+	          anchorCustomIDPattern: /\{#(.*?)\}/,
 	          permalinkClass: 'header-anchor',
 	          permalinkSymbol: '¶',
 	          permalinkBefore: false
@@ -10742,7 +10752,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	    anchorClassName: "markdownIt-Anchor",
 	    resetIds: true,
 	    anchorLinkSpace: true,
-	    anchorLinkSymbolClassName: null
+	    anchorLinkSymbolClassName: null,
+	    anchorCustomIDPattern: /\{#(.*?)\}/
 	  }, options);
 
 	  markdownItSecondInstance = (0, _clone2.default)(md);
@@ -10751,7 +10762,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	  headingIds = {};
 
 	  md.core.ruler.push("init_toc", function (state) {
-	    Token = state.Token;
 	    var tokens = state.tokens;
 
 	    // reset key ids for each document
@@ -10772,17 +10782,33 @@ return /******/ (function(modules) { // webpackBootstrap
 	      var heading_close = tokens[i];
 
 	      if (heading.type === "inline") {
-	        var content = void 0;
-	        if (heading.children && heading.children[0].type === "link_open") {
+	        var content = void 0,
+	            contentRaw = void 0;
+	        if (heading.children.length > 0 && heading.children[0].type === "link_open") {
 	          // headings that contain links have to be processed
 	          // differently since nested links aren't allowed in markdown
-	          content = heading.children[1].content;
-	          heading._tocAnchor = makeSafe(content, headingIds);
+	          contentRaw = heading.children[1].content;
+	          content = heading.children[1].content.replace(options.anchorCustomIDPattern, '');
+	          content.trim();
+
+	          heading.children[1].content = content;
+	          heading._tocAnchor = makeSafe(contentRaw, headingIds, options);
 	        } else {
-	          content = heading.content;
-	          heading._tocAnchor = makeSafe(heading.children.reduce(function (acc, t) {
+	          content = heading.content.replace(options.anchorCustomIDPattern, '');
+	          content.trim();
+
+	          heading.content = content;
+
+	          var t = heading.children.reduce(function (acc, t) {
 	            return acc + t.content;
-	          }, ""), headingIds);
+	          }, "");
+
+	          if (heading.children.length > 0) {
+	            heading.children[0].content = heading.children[0].content.replace(options.anchorCustomIDPattern, '');
+	            heading.children[0].content.trim();
+	          }
+
+	          heading._tocAnchor = makeSafe(t, headingIds, options);
 	        }
 
 	        tocArray.push({
@@ -10919,6 +10945,10 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _uslug2 = _interopRequireDefault(_uslug);
 
+	var _token = __webpack_require__(89);
+
+	var _token2 = _interopRequireDefault(_token);
+
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 	function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
@@ -10927,7 +10957,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	var TOC_RE = /^@\[toc\]/im;
 
 	var markdownItSecondInstance = function markdownItSecondInstance() {};
-	var Token = function Token() {};
 	var headingIds = {};
 	var tocHtml = "";
 
@@ -10935,8 +10964,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	  return new Array(num + 1).join(string);
 	};
 
-	var makeSafe = function makeSafe(string, headingIds) {
+	var makeSafe = function makeSafe(string, headingIds, options) {
+	  var matches = string.match(options.anchorCustomIDPattern);
+
 	  var key = (0, _uslug2.default)(string); // slugify
+
+	  if (matches) {
+	    key = matches[1];
+	  }
+
 	  if (!headingIds[key]) {
 	    headingIds[key] = 0;
 	  }
@@ -10945,18 +10981,18 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 	var space = function space() {
-	  return _extends({}, new Token("text", "", 0), { content: " " });
+	  return _extends({}, new _token2.default("text", "", 0), { content: " " });
 	};
 
 	var renderAnchorLinkSymbol = function renderAnchorLinkSymbol(options) {
 	  if (options.anchorLinkSymbolClassName) {
-	    return [_extends({}, new Token("span_open", "span", 1), {
+	    return [_extends({}, new _token2.default("span_open", "span", 1), {
 	      attrs: [["class", options.anchorLinkSymbolClassName]]
-	    }), _extends({}, new Token("text", "", 0), {
+	    }), _extends({}, new _token2.default("text", "", 0), {
 	      content: options.anchorLinkSymbol
-	    }), new Token("span_close", "span", -1)];
+	    }), new _token2.default("span_close", "span", -1)];
 	  } else {
-	    return [_extends({}, new Token("text", "", 0), {
+	    return [_extends({}, new _token2.default("text", "", 0), {
 	      content: options.anchorLinkSymbol
 	    })];
 	  }
@@ -10965,19 +11001,18 @@ return /******/ (function(modules) { // webpackBootstrap
 	var renderAnchorLink = function renderAnchorLink(anchor, options, tokens, idx) {
 	  var _tokens$children;
 
-	  var linkTokens = [_extends({}, new Token("link_open", "a", 1), {
+	  var linkTokens = [_extends({}, new _token2.default("link_open", "a", 1), {
 	    attrs: [["class", options.anchorClassName], ["href", "#" + anchor]]
-	  })].concat(_toConsumableArray(renderAnchorLinkSymbol(options)), [new Token("link_close", "a", -1)]);
+	  })].concat(_toConsumableArray(renderAnchorLinkSymbol(options)), [new _token2.default("link_close", "a", -1)]);
 
 	  // `push` or `unshift` according to anchorLinkBefore option
 	  // space is at the opposite side.
 	  var actionOnArray = {
 	    false: "push",
 	    true: "unshift"
-	  };
 
-	  // insert space between anchor link and heading ?
-	  if (options.anchorLinkSpace) {
+	    // insert space between anchor link and heading ?
+	  };if (options.anchorLinkSpace) {
 	    linkTokens[actionOnArray[!options.anchorLinkBefore]](space());
 	  }
 	  (_tokens$children = tokens[idx + 1].children)[actionOnArray[options.anchorLinkBefore]].apply(_tokens$children, _toConsumableArray(linkTokens));
@@ -11001,9 +11036,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 	var generateTocMarkdownFromArray = function generateTocMarkdownFromArray(headings, options) {
-	  var tree = { nodes: [] };
-	  // create an ast
-	  headings.forEach(function (heading) {
+	  var tree = { nodes: []
+	    // create an ast
+	  };headings.forEach(function (heading) {
 	    if (heading.level < options.tocFirstLevel || heading.level > options.tocLastLevel) {
 	      return;
 	    }
